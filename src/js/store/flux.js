@@ -1,26 +1,89 @@
-const URL_API = "https://assets.breatheco.de/apis/fake/contact";
-const agenda_slug = "andresgoag";
-
-const getState = ({ getStore, setStore }) => {
+const getState = ({ getStore, setStore, getActions }) => {
 	return {
 		store: {
-			//Your data structures, A.K.A Entities
 			contacts: []
 		},
 		actions: {
-			//(Arrow) Functions that update the Store
-			// Remember to use the scope: scope.state.store & scope.setState()
-
+			// arrow functions to update store
 			getContacts: () => {
-				fetch(`${URL_API}/agenda/${agenda_slug}`)
+				// get contacts from API
+				fetch("https://assets.breatheco.de/apis/fake/contact/agenda/matthewcarpenter")
+					.then(response => {
+						if (!response.ok) {
+							throw new Error(response.statusText);
+						}
+						return response.json();
+					})
+					.then(data => {
+						setStore({ contacts: data });
+					});
+			},
+
+			addContact: contact => {
+				// add contact details to API
+				fetch("https://assets.breatheco.de/apis/fake/contact/", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(contact)
+				})
 					.then(response => {
 						if (response.ok) {
-							return response.json();
-						} else {
-							return new Error("Error fetching the api");
+							fetch("https://assets.breatheco.de/apis/fake/contact/agenda/matthewcarpenter")
+								.then(response => {
+									if (!response.ok) {
+										throw new Error(response.statusText);
+									}
+									return response.json();
+								})
+								.then(data => {
+									setStore({ contacts: data });
+								});
 						}
 					})
-					.then(data => setStore(data))
+					.catch(err => console.error("Error:", err));
+			},
+
+			deleteContact: id => {
+				fetch(`https://assets.breatheco.de/apis/fake/contact/${id}`, {
+					method: "DELETE"
+				})
+					.then(response => {
+						if (response.ok) {
+							fetch("https://assets.breatheco.de/apis/fake/contact/agenda/matthewcarpenter")
+								.then(response => {
+									if (!response.ok) {
+										throw new Error(response.statusText);
+									}
+									return response.json();
+								})
+								.then(data => {
+									setStore({ contacts: data });
+								});
+						}
+					})
+					.catch(err => console.error("Error:", err));
+			},
+
+			editContact: contact => {
+				fetch(`https://assets.breatheco.de/apis/fake/contact/${contact.id}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(contact)
+				})
+					.then(response => {
+						if (response.ok) {
+							fetch("https://assets.breatheco.de/apis/fake/contact/agenda/matthewcarpenter")
+								.then(response => {
+									if (!response.ok) {
+										throw new Error(response.statusText);
+									}
+									return response.json();
+								})
+								.then(data => {
+									setStore({ contacts: data });
+								});
+						}
+					})
 					.catch(error => console.error(error));
 			}
 		}
